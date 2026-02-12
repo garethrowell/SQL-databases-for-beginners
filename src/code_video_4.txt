@@ -1,0 +1,63 @@
+
+-- creating many-to-many 
+-- relationship between two tables
+-- one customer to many products
+-- and one product to many 
+-- customers
+-- use "cross-walk" table with
+-- two foreign keys
+
+CREATE TABLE fly.order(
+     id integer
+     GENERATED ALWAYS AS IDENTITY
+     PRIMARY KEY,
+     order_date date,
+     customer integer NOT NULL,
+     product_id integer NOT NULL,
+     quantity integer,
+
+     CONSTRAINT fk_customer_id
+     FOREIGN KEY (customer_id)
+     REFERENCES fly.customer(id),
+
+     CONSTRAINT fk_product_id
+     FOREIGN KEY (project_id)
+     REFERENCES fly.product(id);
+
+\copy fly.order (order_date, customer_id, product_id, quantity) from './flyfishing_orders.csv' with (FORMAT csv, HEADER true);
+
+-- inspect relationships with join
+
+SELECT c.name, o.order_date, 
+     p.name AS product, p.cost, 
+     o.quantity
+     FROM fly.customer AS c
+     INNER JOIN
+     fly.order AS o
+     ON c.id = o.customer_id
+     INNER JOIN
+     fly.product AS p
+     ON p.id = o.product_id
+
+-- test referential integrity 
+-- between orders and 
+-- both products and customers
+
+INSERT INTO fly.order (
+     '20260115', 31, 28, 1)
+
+-- the customer id 31 is 
+-- out of range
+-- should throw foreign key 
+-- constraint error
+
+INSERT INTO fly.order (
+     '20250115', 30, 49, 1)
+
+-- the product id 49 is 
+-- out of range
+-- should also through
+-- foreign key constraint
+-- error
+
+

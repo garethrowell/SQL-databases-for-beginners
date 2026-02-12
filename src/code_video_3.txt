@@ -1,0 +1,88 @@
+-- create one-to-one relationship
+
+-- between customer and customer 
+-- credit card info
+
+CREATE TABLE fly.customer(
+     id integer 
+     GENERATED ALWAYS AS IDENTITY
+     PRIMARY KEY;
+     name text,
+     address text,
+     city text,
+     state text,
+     zipcode integer
+     );
+
+\copy fly.customer (name, address, city, state, zipcode) from './flyfishing_customers.csv' with (FORMAT csv, HEADER true);
+
+SELECT * FROM fly.customer;
+
+-- id below is not auto-incremented
+-- in child table must be 
+-- maintained programatically
+
+CREATE TABLE fly.customer_payment(
+     id integer
+     PRIMARY KEY, 
+     credit_card_no text,
+     exp_date text,
+     cvv
+     );
+
+\copy fly.customer_payment (id, credit_card_no, exp_date, cvv) from './flyfishing_customerpayments.csv) with (FORMAT csv, HEADER true);
+
+SELECT * FROM fly.customer_payment;
+
+-- inspect join between two tables
+
+SELECT c.name, p.credit_card_no
+     FROM fly.customer AS c
+     INNER JOIN
+     fly.customer_payment AS p
+     ON c.id = p.id;
+
+-- note that the relationship 
+-- is between the two primary keys
+-- p.id will be set as the 
+-- foreign key to c.id
+
+ALTER TABLE fly.customer_payment
+     ADD CONSTRAINT 
+     fk_fly_customer_id
+     FOREIGN KEY (id)
+     REFERENCES fly.customer(id)
+     ON DELETE CASCADE;
+
+-- delete cascade above is set so
+-- there is no credit card row
+-- when customer row is deleted
+
+-- for 1-to-1 referential integrity
+-- test fk constraint 
+-- then test unique constraint
+
+INSERT INTO fly.customer_payment(
+     id, credit_card_no, exp_date, 
+     cvv) VALUES
+     (31, '1111 2222 3333 4444', 
+     '0127', '027');
+
+-- id value 31 above is outside 
+-- domain of customer.id
+-- throws a foreign key constraint 
+-- violation
+
+INSERT INTO fly.customer_payment(
+     id, credit_card_no, exp_date, 
+     cvv) VALUES
+     (27, '1111 2222 3333 4444', 
+     '0127', '027');
+
+-- id value 27 above is repeat 
+-- value of existing customer.id
+-- throws primary key unique 
+-- constraint violation
+
+
+     

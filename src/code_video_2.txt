@@ -1,0 +1,96 @@
+
+-- create a lookup table for 
+-- categorical data
+-- set up a one-to-many relationship
+-- between the lookup table and 
+-- the data table
+
+-- show schemas
+
+\dn
+
+-- create the lookup table 
+
+SELECT DISTINCT category 
+     FROM fly.product;
+
+CREATE TABLE lu.product_category AS
+     SELECT DISTINCT category 
+     FROM fly.product;
+
+SELECT * FROM lu.product_category;
+
+-- create a primary key that 
+-- auto-increments
+
+ALTER TABLE lu.product_category
+     ADD COLUMN id integer
+     GENERATED ALWAYS AS IDENTITY
+     PRIMARY KEY;
+
+SELECT * FROM lu.product_category;
+
+-- set up one-to-many referential 
+-- integrity
+
+-- need a foreign key in the 
+-- products data table
+
+-- this is what it will look like
+
+SELECT f.category, l.category, l.id
+     FROM fly.product AS f
+     INNER JOIN
+     lu.product_category AS l
+     ON f.category = l.category;
+
+-- set up the fk column
+
+ALTER TABLE fly.product
+     ADD COLUMN category_id integer;
+
+UPDATE fly.product AS f
+     SET category_id = l.id
+     FROM lu.product_category AS l
+     WHERE f.category = l.category;
+
+ALTER TABLE fly.product
+     ADD CONSTRAINT 
+     fk_product_category_lookup
+     FOREIGN KEY (category_id)
+     REFERENCES 
+     lu.product_category(id);
+
+-- clean up
+
+ALTER TABLE fly.product
+     DROP COLUMN category;
+
+-- inspect the new one-to-many
+
+SELECT f.category_id, 
+     f.name AS product, l.id, 
+     l.category
+     FROM fly.product AS f
+     INNER JOIN
+     lu.product_category as l
+     ON f.category_id = l.id;
+
+SELECT * FROM lu.product_category;
+
+-- test referential integrity
+-- 7 is outside domain of l.id
+-- should throw fk constraint 
+-- violation
+
+INSERT INTO fly.product(
+     name, description, cost, 
+     category_id)
+     VALUES(
+     'my_product', 
+     'a great product', 
+     19.99, 7);
+
+
+
+

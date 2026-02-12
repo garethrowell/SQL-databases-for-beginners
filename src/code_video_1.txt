@@ -1,0 +1,55 @@
+
+
+-- create a database, user, schema 
+-- and table with data
+
+psql template1
+
+CREATE DATABASE flyfishingdb;
+
+-- list databases
+
+\l
+
+CREATE USER gareth;
+
+psql flyfishingdb
+
+CREATE SCHEMA fly 
+     AUTHORIZATION gareth;
+
+CREATE SCHEMA lu 
+     AUTHORIZATION gareth;
+
+-- list schemas
+
+\dn
+
+-- log out
+
+\q
+
+psql -U gareth flyfishing 
+
+CREATE TABLE fly.product(
+     name text,
+     description,
+     cost numeric(10,2),
+     category text
+     );
+
+\copy fly.product from '.flyfishing_products.csv' with (FORMAT csv, HEADER true);
+
+SELECT * FROM fly.product;
+
+-- create a primary key that 
+-- auto-increments
+
+ALTER TABLE fly.product
+     ADD COLUMN id integer
+     GENERATED ALWAYS AS IDENTITY
+     PRIMARY KEY;
+
+SELECT * FROM fly.product;
+
+
